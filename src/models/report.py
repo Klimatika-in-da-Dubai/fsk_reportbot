@@ -4,7 +4,7 @@ from src.models.work import Work, WorkNode
 
 @dataclass
 class Report:
-    work_nodes: list[Work] = field(default_factory=list)
+    works: list[Work] = field(default_factory=list)
 
     @property
     def last_work(self) -> Work:
@@ -15,4 +15,7 @@ class Report:
         return self.last_work.last_work_node
 
     def add_work(self, work: Work) -> None:
-        self.work_nodes.append(work)
+        self.works.append(work)
+
+    def empty(self) -> bool:
+        return len(self.works) == 0
