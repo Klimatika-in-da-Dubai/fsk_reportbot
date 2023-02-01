@@ -8,7 +8,7 @@ class Report:
 
     @property
     def last_work(self) -> Work:
-        return self.work_nodes[-1]
+        return self.works[-1]
 
     @property
     def last_work_node(self) -> WorkNode:
