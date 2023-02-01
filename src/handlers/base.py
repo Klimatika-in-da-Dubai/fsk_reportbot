@@ -31,6 +31,15 @@ async def cmd_menu(message: types.Message, state: FSMContext) -> None:
 
 @base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work"))
 async def cb_add_work(callback: types.CallbackQuery, state: FSMContext):
+    report = get_user_report(callback.message.chat.id)
+
+    if not report.empty() and report.last_work.empty():
+        await callback.answer(
+            "Что бы добавить новую работу, нужно добавить узлы в последню работу",
+            show_alert=True,
+        )
+        return
+
     await callback.answer()
 
     await state.set_state(Form.work)
@@ -48,7 +57,15 @@ async def process_work_name(message: types.Message, state: FSMContext):
 
 
 @base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work_node"))
-async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext):
+async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
+
+    report = get_user_report(callback.message.chat.id)
+    if report.empty():
+        await callback.answer(
+            "Что бы добавить узел работы, нужно добавить работу", show_alert=True
+        )
+        return
+
     await callback.answer()
 
     await state.set_state(Form.work_node)
@@ -119,6 +136,18 @@ async def cb_comment_no(callback: types.CallbackQuery, state: FSMContext):
 async def cb_generate_report(
     callback: types.CallbackQuery, state: FSMContext, bot: Bot
 ):
+    report = get_user_report(callback.message.chat.id)
+    if report.empty():
+        await callback.answer("Вы должны создать хотя бы одну работу", show_alert=True)
+        return
+
+    last_work = report.last_work
+    if last_work.empty():
+        await callback.answer(
+            "Вы должны добавить в работу хотя бы один узел", show_alert=True
+        )
+        return
+
     await callback.answer()
 
     await state.clear()
