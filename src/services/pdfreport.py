@@ -4,7 +4,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfdoc import Destination
 from reportlab.pdfbase.ttfonts import TTFont, TTFontParser
 
-from reporttools import *
+from src.services.reporttools import *
 
  
 class pdfGenerator():
@@ -42,17 +42,17 @@ class pdfGenerator():
         canv.showPage()
     
     
-    def bef_aft_slide(self, work_name: str, node_name: str):
+    def bef_aft_slide(self, work_name: str, node_name: str, before, after):
         #, before: BinaryIO = 0, after: BinaryIO = 0
         canv = self.canv
 
         background = Image.open(BACKGROUND)
         add_image(canv, background, PDF_WIDTH, 0, 0)
 
-        # img_before = image_crop(before)
-        # img_after = image_crop(after)
-        # add_image(canv, img_before, 860, Indent.get_x(), Indent.get_y() * 3)
-        # add_image(canv, img_after, 860, PDF_WIDTH - 860 - Indent.get_x(), Indent.get_y() * 3)
+        img_before = image_crop(before)
+        img_after = image_crop(after)
+        add_image(canv, img_before, 860, Indent.get_x(), Indent.get_y() * 3)
+        add_image(canv, img_after, 860, PDF_WIDTH - 860 - Indent.get_x(), Indent.get_y() * 3)
     
         textobject = canv.beginText()
         textobject.setTextOrigin(Indent.get_x(), PDF_HEIGHT - Indent.get_y() - HEDING_FONT_SIZE)
@@ -138,11 +138,14 @@ class pdfGenerator():
         canv.drawText(textobject)
         canv.showPage()
     
-    def generate(self, report: dict):
-        print(report)
+    def generate(self, work_list: dict):
+        print(work_list)
         self.first_slide()
-        self.bef_aft_slide("Название работы", "Название узла")
-        self.comment_slide("Название работы", "Название узла", "Ах эффектабсоля эффектигу, рас провтом. Надежновия эффейсу прават общие дохнове риментаммые рам созранигу, в ваши поваютные те та ботбудоку и вышаете римерир уемению в вы может возвозм ожностивно публи природакти. Иродейсть созраваши вентоваетный вдобесп ерфекспечать упредывасть укти. Ель на верогла влемениемы с в ненить неродейсть с и сворно програ файлойтенень очесь эленицы. и редострас прединтекти. Быстовышает вышаете добъективно срастро льзовать испечать кницы. Они сравлегдаря эффектуравне для бойтеро зрачноваши сгенте стураваши дей. Быствия ранить с в книю созможет вать эффекти. Угиевкл адетельно вдостушевкумен ивнение вклагот овтоваетный указать оческо публаго стводав лентный удохнос ловать удежновени свое вает предобщие повать удежнослем теримен итеспосло свозрас венить сравлегдаря бойте прода вышаетные их постиро вативанигу, руемы срачнос лойтельному всегда дежность оченты сводаванторн оглавленив с пользованте этапах повышае тнограс тирословате иниейст равленицы и с и доку публаготов с поздактивне добная бойте их эленеск отменят вдовтовать пов на вы заменер иметный коль на файлов нентиро зра-")
+        for work_name, work in work_list:
+            for node_name, node in work:
+                self.bef_aft_slide(work_name, node_name, node[0], node[1])
+                if node[2] != '':
+                    self.comment_slide(work_name, node_name, node[2])
         self.last_slide()
         self.canv.save()
 
