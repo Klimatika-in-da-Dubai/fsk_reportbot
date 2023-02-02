@@ -26,7 +26,9 @@ async def cmd_start(message: types.Message, state: FSMContext) -> None:
 @base_router.message(Command(commands=["/menu"]))
 async def cmd_menu(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Form.menu)
-    await message.answer("Выберите действие", reply_markup=get_menu_keyboard())
+    await message.answer(
+        "Выберите действие", reply_markup=get_menu_keyboard(message.chat.id)
+    )
 
 
 @base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work"))
@@ -48,7 +50,7 @@ async def process_work_name(message: types.Message, state: FSMContext):
 
 
 @base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work_node"))
-async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext):
+async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
 
     await state.set_state(Form.work_node)
@@ -111,7 +113,7 @@ async def cb_comment_no(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(Form.menu)
     await callback.message.edit_text(
-        "Выберите действие", reply_markup=get_menu_keyboard()
+        "Выберите действие", reply_markup=get_menu_keyboard(callback.message.chat.id)
     )
 
 
@@ -119,6 +121,7 @@ async def cb_comment_no(callback: types.CallbackQuery, state: FSMContext):
 async def cb_generate_report(
     callback: types.CallbackQuery, state: FSMContext, bot: Bot
 ):
+
     await callback.answer()
 
     await state.clear()
