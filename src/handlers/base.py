@@ -11,6 +11,7 @@ from src.models.work_node import WorkNode
 from src.keyboards.menu import MenuCB, get_menu_keyboard, get_yes_no_keyboard
 from src.utils.states import Form
 from src.utils.getters import get_user_report
+from src.services import pdfreport
 
 from loader import users
 
@@ -122,5 +123,7 @@ async def cb_generate_report(
     await callback.answer()
 
     await state.clear()
+    print(get_user_report(callback.message.chat.id))
+    # awync pdfGenerator.generate()
     async with ChatActionSender.upload_document(callback.message.chat.id, bot=bot):
         await callback.message.answer("Генерируем отчёт")
