@@ -131,14 +131,13 @@ async def cb_generate_report(
     await state.clear()
     async with ChatActionSender.upload_document(callback.message.chat.id, bot=bot):
         await callback.message.answer("Генерируем отчёт")
-        await callback.message.answer_document(types.FSInputFile(pdf_report_path), caption=("Thank you for your work!"))
+        await callback.message.answer_document(
+            types.FSInputFile(pdf_report_path), caption=("Спасибо за вашу работу!")
+        )
+
 
 async def generate_report(bot: Bot, chat_id: int) -> str:
-    report = await create_report_dict(
-        get_user_report(chat_id), bot
-    )
+    report = await create_report_dict(get_user_report(chat_id), bot)
     report_name = f"{chat_id}_{datetime.now().strftime('%m-%d-%Y_%H-%M-%S')}"
     pdfreport.pdfGenerator(report_name).generate(report)
     return f"./reports/{report_name}-compressed.pdf"
-
-
