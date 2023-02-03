@@ -10,8 +10,8 @@ async def create_report_dict(report: Report, bot: Bot) -> dict:
         work_node_dict = {}
         for work_node in work.work_nodes:
             work_node_dict[work_node.name] = {
-                "photo_before": await bot.download_file(work_node.photo_before.file_id),
-                "photo_after": await bot.download_file(work_node.photo_after.file_id),
+                "photo_before": await bot.download(work_node.photo_before.file_id),
+                "photo_after": await bot.download(work_node.photo_after.file_id),
                 "comment": work_node.comment,
             }
         report_dict[work.name] = work_node_dict
