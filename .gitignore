@@ -130,3 +130,6 @@ dmypy.json
 
 # binary
 /reports/*.pdf
+
+
+.vscode/
