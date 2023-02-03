@@ -4,7 +4,6 @@ from aiogram import Bot, Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart, Command
 from aiogram.utils.chat_action import ChatActionSender
-
 from src.models.report import Report
 from src.models.work import Work
 from src.models.work_node import WorkNode
@@ -12,6 +11,9 @@ from src.keyboards.menu import MenuCB, get_menu_keyboard, get_yes_no_keyboard
 from src.utils.states import Form
 from src.utils.getters import get_user_report
 from src.services import pdfreport
+from src.utils.utils import create_report_dict
+
+from datetime import datetime
 
 from loader import users
 
@@ -27,7 +29,9 @@ async def cmd_start(message: types.Message, state: FSMContext) -> None:
 @base_router.message(Command(commands=["/menu"]))
 async def cmd_menu(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Form.menu)
-    await message.answer("Выберите действие", reply_markup=get_menu_keyboard())
+    await message.answer(
+        "Выберите действие", reply_markup=get_menu_keyboard(message.chat.id)
+    )
 
 
 @base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work"))
@@ -49,7 +53,7 @@ async def process_work_name(message: types.Message, state: FSMContext):
 
 
 @base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work_node"))
-async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext):
+async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
 
     await state.set_state(Form.work_node)
@@ -112,7 +116,7 @@ async def cb_comment_no(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(Form.menu)
     await callback.message.edit_text(
-        "Выберите действие", reply_markup=get_menu_keyboard()
+        "Выберите действие", reply_markup=get_menu_keyboard(callback.message.chat.id)
     )
 
 
@@ -120,10 +124,21 @@ async def cb_comment_no(callback: types.CallbackQuery, state: FSMContext):
 async def cb_generate_report(
     callback: types.CallbackQuery, state: FSMContext, bot: Bot
 ):
+
     await callback.answer()
 
+    pdf_report_path = await generate_report(bot, callback.message.chat.id)
     await state.clear()
-    print(get_user_report(callback.message.chat.id))
-    # awync pdfGenerator.generate()
     async with ChatActionSender.upload_document(callback.message.chat.id, bot=bot):
         await callback.message.answer("Генерируем отчёт")
+        await callback.message.answer_document(types.FSInputFile(pdf_report_path), caption=("Thank you for your work!"))
+
+async def generate_report(bot: Bot, chat_id: int) -> str:
+    report = await create_report_dict(
+        get_user_report(chat_id), bot
+    )
+    report_name = f"{chat_id}_{datetime.now().strftime('%m-%d-%Y_%H-%M-%S')}"
+    pdfreport.pdfGenerator(report_name).generate(report)
+    return f"./reports/{report_name}-compressed.pdf"
+
+
