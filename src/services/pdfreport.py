@@ -1,3 +1,4 @@
+import io
 from PIL import Image
 
 from reportlab.pdfbase import pdfmetrics
@@ -42,7 +43,7 @@ class pdfGenerator():
         canv.showPage()
     
     
-    def bef_aft_slide(self, work_name: str, node_name: str, before, after):
+    def bef_aft_slide(self, work_name: str, node_name: str, before: BinaryIO, after: BinaryIO):
         #, before: BinaryIO = 0, after: BinaryIO = 0
         canv = self.canv
 
@@ -51,8 +52,8 @@ class pdfGenerator():
 
         img_before = image_crop(before)
         img_after = image_crop(after)
-        add_image(canv, img_before, 860, Indent.get_x(), Indent.get_y() * 3)
-        add_image(canv, img_after, 860, PDF_WIDTH - 860 - Indent.get_x(), Indent.get_y() * 3)
+        add_image(canv, img_before, 780, Indent.get_x(), Indent.get_y())
+        add_image(canv, img_after, 780, PDF_WIDTH - 760 - Indent.get_x(), Indent.get_y())
     
         textobject = canv.beginText()
         textobject.setTextOrigin(Indent.get_x(), PDF_HEIGHT - Indent.get_y() - HEDING_FONT_SIZE)
@@ -139,13 +140,12 @@ class pdfGenerator():
         canv.showPage()
     
     def generate(self, work_list: dict):
-        print(work_list)
         self.first_slide()
-        for work_name, work in work_list:
-            for node_name, node in work:
-                self.bef_aft_slide(work_name, node_name, node[0], node[1])
-                if node[2] != '':
-                    self.comment_slide(work_name, node_name, node[2])
+        for work_name, work in work_list.items():
+            for node_name, node in work.items():
+                self.bef_aft_slide(work_name, node_name, node["photo_before"], node["photo_after"])
+                if node["comment"] != '':
+                    self.comment_slide(work_name, node_name, node["comment"])
         self.last_slide()
         self.canv.save()
 
