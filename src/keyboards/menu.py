@@ -20,13 +20,6 @@ def get_menu_keyboard(chat_id: int) -> types.InlineKeyboardMarkup:
             )
         )
 
-    if not report.empty():
-        builder.add(
-            types.InlineKeyboardButton(
-                text="Добавить узел работы",
-                callback_data=MenuCB(action="add_work_node").pack(),
-            )
-        )
     if not report.empty() and not report.last_work.empty():
         builder.add(
             types.InlineKeyboardButton(

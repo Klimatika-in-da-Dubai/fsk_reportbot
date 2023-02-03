@@ -49,15 +49,8 @@ async def process_work_name(message: types.Message, state: FSMContext):
     report = get_user_report(message.chat.id)
     report.add_work(Work(message.text))
 
-    await cmd_menu(message, state)
-
-
-@base_router.callback_query(Form.menu, MenuCB.filter(F.action == "add_work_node"))
-async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
-    await callback.answer()
-
     await state.set_state(Form.work_node)
-    await callback.message.answer("Введите название для узла работы")
+    await message.answer("Введите название для узла работы")
 
 
 @base_router.message(Form.work_node, F.text)
@@ -78,24 +71,46 @@ async def process_photo_before(message: types.Message, state: FSMContext):
     work_node = report.last_work_node
     work_node.photo_before = message.photo[-1]
 
+    await state.set_state(Form.work_node_add)
+    await message.answer("Добавить работу?", reply_markup=get_yes_no_keyboard())
+
+
+@base_router.callback_query(Form.work_node_add, MenuCB.filter(F.action == "yes"))
+async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.answer()
+
+    await state.set_state(Form.work_node)
+    await callback.message.answer("Введите название для узла работы")
+
+
+async def photo_after(message: types.Message, state: FSMContext):
+    report = get_user_report(message.chat.id)
+
     await state.set_state(Form.photo_after)
-    await message.answer("Фото работы ПОСЛЕ")
+    await message.answer(f"Фото работы ПОСЛЕ для {report.last_work.current_node.name}")
+
+
+@base_router.callback_query(Form.work_node_add, MenuCB.filter(F.action == "no"))
+async def cb_add_work_node(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.answer()
+    await photo_after(callback.message, state)
 
 
 @base_router.message(Form.photo_after, F.photo)
 async def process_photo_after(message: types.Message, state: FSMContext):
     report = get_user_report(message.chat.id)
-    work_node = report.last_work_node
+    work_node = report.last_work.current_node
     work_node.photo_after = message.photo[-1]
 
-    await state.set_state(Form.comment)
+    await state.set_state(Form.comment_add)
     await message.answer("Добавить комментарий?", reply_markup=get_yes_no_keyboard())
 
 
-@base_router.callback_query(Form.comment, MenuCB.filter(F.action == "yes"))
+@base_router.callback_query(Form.comment_add, MenuCB.filter(F.action == "yes"))
 async def cb_comment_yes(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
+    await state.set_state(Form.comment)
     await callback.message.edit_text("Введите комментарий")
 
 
@@ -105,18 +120,32 @@ async def process_comment(message: types.Message, state: FSMContext):
     warnings.warn("Do validation for comment", FutureWarning)
 
     report = get_user_report(message.chat.id)
-    work_node = report.last_work_node
+    work_node = report.last_work.current_node
     work_node.comment = message.text
+
+    report.last_work.next()
+    if report.last_work.current_node is not None:
+        await photo_after(message, state)
+        return
 
     await cmd_menu(message, state)
 
 
-@base_router.callback_query(Form.comment, MenuCB.filter(F.action == "no"))
+@base_router.callback_query(Form.comment_add, MenuCB.filter(F.action == "no"))
 async def cb_comment_no(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
+
+    report = get_user_report(callback.message.chat.id)
+
+    report.last_work.next()
+    if report.last_work.current_node is not None:
+        await photo_after(callback.message, state)
+        return
+
     await state.set_state(Form.menu)
     await callback.message.edit_text(
-        "Выберите действие", reply_markup=get_menu_keyboard(callback.message.chat.id)
+        "Выберите действие",
+        reply_markup=get_menu_keyboard(callback.message.chat.id),
     )
 
 
@@ -127,10 +156,10 @@ async def cb_generate_report(
 
     await callback.answer()
 
-    pdf_report_path = await generate_report(bot, callback.message.chat.id)
     await state.clear()
     async with ChatActionSender.upload_document(callback.message.chat.id, bot=bot):
         await callback.message.answer("Генерируем отчёт")
+        pdf_report_path = await generate_report(bot, callback.message.chat.id)
         await callback.message.answer_document(
             types.FSInputFile(pdf_report_path), caption=("Спасибо за вашу работу!")
         )
