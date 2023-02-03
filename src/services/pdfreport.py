@@ -141,11 +141,12 @@ class pdfGenerator():
     
     def generate(self, work_list: dict):
         self.first_slide()
-        for work_name, work in work_list.items():
-            for node_name, node in work.items():
-                self.bef_aft_slide(work_name, node_name, node["photo_before"], node["photo_after"])
+        # work1: { name : "name", nodes: {first: {name, bef, aft, comm}, second...}}
+        for _work, work in work_list.items():
+            for _node, node in work["nodes"].items():
+                self.bef_aft_slide(work["name"], node["name"], node["photo_before"], node["photo_after"])
                 if node["comment"] != '':
-                    self.comment_slide(work_name, node_name, node["comment"])
+                    self.comment_slide(work["name"], node["name"], node["comment"])
         self.last_slide()
         self.canv.save()
 
