@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # binary
-/reports
+/reports/*.pdf
