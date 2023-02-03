@@ -72,7 +72,7 @@ async def process_photo_before(message: types.Message, state: FSMContext):
     work_node.photo_before = message.photo[-1]
 
     await state.set_state(Form.work_node_add)
-    await message.answer("Добавить работу?", reply_markup=get_yes_no_keyboard())
+    await message.answer("Добавить узел?", reply_markup=get_yes_no_keyboard())
 
 
 @base_router.callback_query(Form.work_node_add, MenuCB.filter(F.action == "yes"))
