@@ -3,6 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.fsm.storage.memory import MemoryStorage
 
+from src.models import User
 
 import config
 
@@ -13,7 +14,7 @@ logging.basicConfig(
 )
 
 
-users = {}
+users: dict[int, User] = {}
 
 bot = Bot(token=config.TELEGRAM_TOKEN)
 storage = MemoryStorage()

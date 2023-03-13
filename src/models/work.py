@@ -7,26 +7,25 @@ from src.models.work_node import WorkNode
 class Work:
     name: str
     work_nodes: list[WorkNode] = field(default_factory=list)
+    comment: str = ""
 
-    _index: int = field(default=0, init=False)
+    def get_work_node(self, index: int) -> WorkNode:
+        return self.work_nodes[index]
 
-    def add_work_node(self, work_node: WorkNode) -> None:
-        self.work_nodes.append(work_node)
+    def add_node(self, node: WorkNode) -> None:
+        self.work_nodes.append(node)
 
-    @property
-    def last_work_node(self) -> WorkNode:
-        return self.work_nodes[-1]
+    def remove_node(self, node: WorkNode) -> None:
+        self.work_nodes.remove(node)
 
-    @property
-    def current_node(self) -> WorkNode | None:
-        if self._index == len(self.work_nodes):
-            return None
-        return self.work_nodes[self._index]
+    def pop_node(self, index: int) -> None:
+        self.work_nodes.pop(index)
 
     def empty(self) -> bool:
         return len(self.work_nodes) == 0
 
-    def next(self) -> None:
-        if self._index == len(self.work_nodes):
-            return
-        self._index += 1
+    def filled(self) -> bool:
+        if self.empty():
+            return False
+
+        return all(node.filled() for node in self.work_nodes)

@@ -1,21 +1,30 @@
 from dataclasses import dataclass, field
-from src.models.work import Work, WorkNode
+from src.models.work_place import WorkPlace
 
 
 @dataclass
 class Report:
-    works: list[Work] = field(default_factory=list)
+    work_places: list[WorkPlace] = field(default_factory=list)
 
-    @property
-    def last_work(self) -> Work:
-        return self.works[-1]
+    def get_work_place(self, index: int) -> WorkPlace:
+        return self.work_places[index]
 
-    @property
-    def last_work_node(self) -> WorkNode:
-        return self.last_work.last_work_node
+    def add_work_place(self, work_place: WorkPlace) -> None:
+        self.work_places.append(work_place)
 
-    def add_work(self, work: Work) -> None:
-        self.works.append(work)
+    def remove_work_place(self, work_place: WorkPlace) -> None:
+        self.work_places.remove(work_place)
+
+    def pop_work_place(self, index: int) -> None:
+        self.work_places.pop(index)
 
     def empty(self) -> bool:
-        return len(self.works) == 0
+        return len(self.work_places) == 0
+
+    def filled(self) -> bool:
+        if self.empty():
+            return False
+
+        return all(work_place.filled() for work_place in self.work_places)
+
+
