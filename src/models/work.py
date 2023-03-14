@@ -12,13 +12,13 @@ class Work:
     def get_work_node(self, index: int) -> WorkNode:
         return self.work_nodes[index]
 
-    def add_node(self, node: WorkNode) -> None:
+    def add_work_node(self, node: WorkNode) -> None:
         self.work_nodes.append(node)
 
-    def remove_node(self, node: WorkNode) -> None:
+    def remove_work_node(self, node: WorkNode) -> None:
         self.work_nodes.remove(node)
 
-    def pop_node(self, index: int) -> None:
+    def pop_work_node(self, index: int) -> None:
         self.work_nodes.pop(index)
 
     def empty(self) -> bool:
