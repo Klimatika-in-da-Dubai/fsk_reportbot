@@ -168,7 +168,7 @@ class pdfGenerator:
                 if work["comment"] != "":
                     self.comment_slide(
                         work_place["name"] + " " + work["name"],
-                        node["name"],
+                        "",
                         work["comment"],
                     )
         self.last_slide()
