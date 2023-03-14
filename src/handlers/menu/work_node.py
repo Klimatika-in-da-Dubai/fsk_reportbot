@@ -19,30 +19,6 @@ work_node_router = Router()
 
 
 @work_node_router.callback_query(
-    MenuState.work_node, WorkNodeCB.filter(F.action == Action.RENAME)
-)
-async def callback_rename_work_place(
-    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkNodeCB
-):
-    await callback.answer()
-
-    await state.set_state(MenuState.work_node_rename)
-    await callback.message.answer("Введите новое имя для узла работы")
-
-
-@work_node_router.message(MenuState.work_node_rename, F.text)
-async def work_place_rename(message: types.Message, state: FSMContext):
-    work_node = get_user(message.chat.id).selected_work_node
-    work_node.name = message.text
-
-    await state.set_state(MenuState.work_node)
-    await message.answer(
-        f"Узел работы: {work_node.name}",
-        reply_markup=get_work_node_keyboard(work_node),
-    )
-
-
-@work_node_router.callback_query(
     MenuState.work_node, WorkNodeCB.filter(F.action == Action.ADD_PHOTO)
 )
 async def callback_rename_work_place(
@@ -73,6 +49,44 @@ async def work_place_rename(message: types.Message, state: FSMContext):
         f"Узел работы: {work_node.name}",
         reply_markup=get_work_node_keyboard(work_node),
     )
+
+
+@work_node_router.callback_query(
+    MenuState.work_node, WorkNodeCB.filter(F.action == Action.RENAME)
+)
+async def callback_rename_work_place(
+    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkNodeCB
+):
+    await callback.answer()
+
+    await state.set_state(MenuState.work_node_rename)
+    await callback.message.answer("Введите новое имя для узла работы")
+
+
+@work_node_router.message(MenuState.work_node_rename, F.text)
+async def work_place_rename(message: types.Message, state: FSMContext):
+    work_node = get_user(message.chat.id).selected_work_node
+    work_node.name = message.text
+
+    await state.set_state(MenuState.work_node)
+    await message.answer(
+        f"Узел работы: {work_node.name}",
+        reply_markup=get_work_node_keyboard(work_node),
+    )
+
+
+@work_node_router.callback_query(
+    MenuState.work_node, WorkNodeCB.filter(F.action == Action.DELETE)
+)
+async def callback_rename_work_place(
+    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkNodeCB
+):
+    await callback.answer()
+    user = get_user(callback.message.chat.id)
+    work = user.selected_work
+    work.remove_work_node(user.selected_work_node)
+
+    await callback_work_place_back(callback, state, FSMContext)
 
 
 @work_node_router.callback_query(

@@ -10,14 +10,14 @@ from src.models import Report, WorkPlace, Work, WorkNode
 class Action(IntEnum):
     NOTHING = auto()
     ADD = auto()
-    REMOVE = auto()
-    POP = auto()
+    DELETE = auto()
     RENAME = auto()
     OPEN = auto()
     GENERATE = auto()
     BACK = auto()
     ADD_PHOTO = auto()
     ADD_COMMENT = auto()
+    DELETE_COMMENT = auto()
 
 
 class MenuCB(CallbackData, prefix="menu"):
@@ -106,6 +106,12 @@ def get_work_place_keyboard(work_place: WorkPlace) -> types.InlineKeyboardMarkup
             callback_data=WorkPlaceCB(action=Action.RENAME, index=-1).pack(),
         )
     )
+    builder.add(
+        types.InlineKeyboardButton(
+            text="Удалить место работы",
+            callback_data=WorkPlaceCB(action=Action.DELETE, index=-1).pack(),
+        )
+    )
 
     builder.add(
         types.InlineKeyboardButton(
@@ -126,57 +132,75 @@ def get_work_keyboard(work: Work) -> types.InlineKeyboardMarkup:
 
         emoji = "✅" if work_node.filled() else "❌"
 
-        builder.add(
+        builder.row(
             types.InlineKeyboardButton(
                 text=f"{work_node.name} {emoji}",
                 callback_data=WorkCB(action=Action.OPEN, index=index).pack(),
             )
         )
 
-    builder.add(
+    builder.row(
         types.InlineKeyboardButton(
             text="Добавить узел работы",
             callback_data=WorkCB(action=Action.ADD, index=-1).pack(),
         )
     )
 
-    builder.add(
+    builder.row(
+        types.InlineKeyboardButton(
+            text="Удалить коментарий",
+            callback_data=WorkCB(action=Action.DELETE_COMMENT, index=-1).pack(),
+        ),
+        types.InlineKeyboardButton(
+            text="Добавить коментарий",
+            callback_data=WorkCB(action=Action.ADD_COMMENT, index=-1).pack(),
+        ),
+    )
+
+    builder.row(
         types.InlineKeyboardButton(
             text="Переименовать работу",
             callback_data=WorkCB(action=Action.RENAME, index=-1).pack(),
         )
     )
-    builder.add(
+
+    builder.row(
         types.InlineKeyboardButton(
-            text="Добавить коментарий",
-            callback_data=WorkCB(action=Action.ADD_COMMENT, index=-1).pack(),
+            text="Удалить работу",
+            callback_data=WorkCB(action=Action.DELETE, index=-1).pack(),
         )
     )
 
-    builder.add(
+    builder.row(
         types.InlineKeyboardButton(
             text="Назад", callback_data=WorkCB(action=Action.BACK, index=-1).pack()
         )
     )
 
-    builder.adjust(1)
     return builder.as_markup()
 
 
 def get_work_node_keyboard(work_node: WorkNode) -> types.InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    builder.add(
-        types.InlineKeyboardButton(
-            text="Переименовать", callback_data=WorkNodeCB(action=Action.RENAME).pack()
-        )
-    )
-
     add_text = "Изменить фото" if work_node.filled() else "Добавить фото"
     builder.add(
         types.InlineKeyboardButton(
             text=add_text,
             callback_data=WorkNodeCB(action=Action.ADD_PHOTO).pack(),
+        )
+    )
+    builder.add(
+        types.InlineKeyboardButton(
+            text="Переименовать узел работы",
+            callback_data=WorkNodeCB(action=Action.RENAME).pack(),
+        )
+    )
+
+    builder.add(
+        types.InlineKeyboardButton(
+            text="Удалить узел работы",
+            callback_data=WorkNodeCB(action=Action.DELETE).pack(),
         )
     )
 

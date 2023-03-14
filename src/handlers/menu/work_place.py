@@ -11,7 +11,7 @@ from src.keyboards.menu import (
 )
 from src.models import WorkPlace, Work
 
-from src.utils.getters import get_user
+from src.utils.getters import get_user, get_user_report
 
 
 from src.states.menu import MenuState
@@ -70,7 +70,7 @@ async def callback_rename_work_place(
     await callback.answer()
 
     await state.set_state(MenuState.work_place_rename)
-    await callback.message.answer("Введите новое имя для места работы")
+    callback.message.answer("Введите новое имя для места работы")
 
 
 @work_place_router.message(MenuState.work_place_rename, F.text)
@@ -83,6 +83,20 @@ async def work_place_rename(message: types.Message, state: FSMContext):
         f"Работа: {work_place.name}",
         reply_markup=get_work_place_keyboard(work_place),
     )
+
+
+@work_place_router.callback_query(
+    MenuState.work_place, WorkPlaceCB.filter(F.action == Action.DELETE)
+)
+async def callback_rename_work_place(
+    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkPlaceCB
+):
+    await callback.answer()
+    user = get_user(callback.message.chat.id)
+    report = user.report
+    report.remove_work_place(user.selected_work_place)
+
+    await callback_work_place_back(callback, state, callback_data)
 
 
 @work_place_router.callback_query(

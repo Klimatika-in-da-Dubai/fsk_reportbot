@@ -47,29 +47,7 @@ async def callback_add_work(
 @work_router.message(MenuState.add_work_node, F.text)
 async def add_work(message: types.Message, state: FSMContext):
     work: Work = get_user(message.chat.id).selected_work
-    work.add_node(WorkNode(message.text))
-
-    await state.set_state(MenuState.work)
-    await message.answer(
-        f"Работа: {work.name}\nКоментарий: {work.comment}",
-        reply_markup=get_work_keyboard(work),
-    )
-
-
-@work_router.callback_query(MenuState.work, WorkCB.filter(F.action == Action.RENAME))
-async def callback_rename_work_place(
-    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
-):
-    await callback.answer()
-
-    await state.set_state(MenuState.work_rename)
-    await callback.message.answer("Введите новое имя для работы")
-
-
-@work_router.message(MenuState.work_rename, F.text)
-async def work_place_rename(message: types.Message, state: FSMContext):
-    work = get_user(message.chat.id).selected_work
-    work.name = message.text
+    work.add_work_node(WorkNode(message.text))
 
     await state.set_state(MenuState.work)
     await message.answer(
@@ -100,6 +78,58 @@ async def work_place_rename(message: types.Message, state: FSMContext):
         f"Работа: {work.name}\nКоментарий: {work.comment}",
         reply_markup=get_work_keyboard(work),
     )
+
+
+@work_router.callback_query(
+    MenuState.work, WorkCB.filter(F.action == Action.DELETE_COMMENT)
+)
+async def callback_rename_work_place(
+    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
+):
+    await callback.answer()
+    work = get_user(callback.message.chat.id).selected_work
+    work.comment = ""
+
+    await state.set_state(MenuState.work)
+    await callback.message.edit_text(
+        f"Работа: {work.name}\nКоментарий: {work.comment}",
+        reply_markup=get_work_keyboard(work),
+    )
+
+
+@work_router.callback_query(MenuState.work, WorkCB.filter(F.action == Action.RENAME))
+async def callback_rename_work_place(
+    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
+):
+    await callback.answer()
+
+    await state.set_state(MenuState.work_rename)
+    await callback.message.answer("Введите новое имя для работы")
+
+
+@work_router.message(MenuState.work_rename, F.text)
+async def work_place_rename(message: types.Message, state: FSMContext):
+    work = get_user(message.chat.id).selected_work
+    work.name = message.text
+
+    await state.set_state(MenuState.work)
+    await message.answer(
+        f"Работа: {work.name}\nКоментарий: {work.comment}",
+        reply_markup=get_work_keyboard(work),
+    )
+
+
+@work_router.callback_query(MenuState.work, WorkCB.filter(F.action == Action.DELETE))
+async def callback_rename_work_place(
+    callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
+):
+    await callback.answer()
+
+    user = get_user(callback.message.chat.id)
+    work_place = user.selected_work_place
+    work_place.remove_work(user.selected_work)
+
+    await callback_work_place_back(callback, state, callback_data)
 
 
 @work_router.callback_query(MenuState.work, WorkCB.filter(F.action == Action.BACK))
