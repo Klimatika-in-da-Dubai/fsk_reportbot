@@ -12,7 +12,6 @@ from src.keyboards.menu import (
     get_work_place_keyboard,
 )
 
-from src.utils.getters import get_user_report
 from src.services import pdfreport
 from src.utils.utils import create_report_dict
 from datetime import datetime

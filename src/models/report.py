@@ -26,5 +26,3 @@ class Report:
             return False
 
         return all(work_place.filled() for work_place in self.work_places)
-
-

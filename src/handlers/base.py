@@ -1,9 +1,6 @@
-import warnings
-
-from aiogram import Bot, Router, types, F
+from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart, Command
-from aiogram.utils.chat_action import ChatActionSender
 
 from src.models import User
 from src.keyboards.menu import get_choose_work_places_keyboard

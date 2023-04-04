@@ -1,6 +1,5 @@
-from aiogram import Bot, Router, types, F
+from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.chat_action import ChatActionSender
 
 from src.keyboards.menu import (
     WorkNodeCB,
@@ -8,7 +7,6 @@ from src.keyboards.menu import (
     get_work_keyboard,
     get_work_node_keyboard,
 )
-from src.models import Work, WorkNode
 
 from src.utils.getters import get_user
 
@@ -21,7 +19,7 @@ work_node_router = Router()
 @work_node_router.callback_query(
     MenuState.work_node, WorkNodeCB.filter(F.action == Action.ADD_PHOTO)
 )
-async def callback_rename_work_place(
+async def callback_add_photo(
     callback: types.CallbackQuery, state: FSMContext, callback_data: WorkNodeCB
 ):
     await callback.answer()
@@ -31,7 +29,7 @@ async def callback_rename_work_place(
 
 
 @work_node_router.message(MenuState.photo_before, F.photo)
-async def work_place_rename(message: types.Message, state: FSMContext):
+async def photo_before(message: types.Message, state: FSMContext):
     work_node = get_user(message.chat.id).selected_work_node
     work_node.photo_before = message.photo[-1]
 
@@ -40,7 +38,7 @@ async def work_place_rename(message: types.Message, state: FSMContext):
 
 
 @work_node_router.message(MenuState.photo_after, F.photo)
-async def work_place_rename(message: types.Message, state: FSMContext):
+async def photo_after(message: types.Message, state: FSMContext):
     work_node = get_user(message.chat.id).selected_work_node
     work_node.photo_after = message.photo[-1]
 
@@ -78,7 +76,7 @@ async def work_place_rename(message: types.Message, state: FSMContext):
 @work_node_router.callback_query(
     MenuState.work_node, WorkNodeCB.filter(F.action == Action.DELETE)
 )
-async def callback_rename_work_place(
+async def callback_delete_work_place(
     callback: types.CallbackQuery, state: FSMContext, callback_data: WorkNodeCB
 ):
     await callback.answer()

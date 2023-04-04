@@ -1,6 +1,5 @@
-from aiogram import Bot, Router, types, F
+from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.chat_action import ChatActionSender
 
 from src.keyboards.menu import (
     WorkPlaceCB,
@@ -11,7 +10,7 @@ from src.keyboards.menu import (
 )
 from src.models import WorkPlace, Work
 
-from src.utils.getters import get_user, get_user_report
+from src.utils.getters import get_user
 
 
 from src.states.menu import MenuState
@@ -88,7 +87,7 @@ async def work_place_rename(message: types.Message, state: FSMContext):
 @work_place_router.callback_query(
     MenuState.work_place, WorkPlaceCB.filter(F.action == Action.DELETE)
 )
-async def callback_rename_work_place(
+async def callback_delete_work_place(
     callback: types.CallbackQuery, state: FSMContext, callback_data: WorkPlaceCB
 ):
     await callback.answer()

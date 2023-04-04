@@ -1,6 +1,5 @@
-from aiogram import Bot, Router, types, F
+from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.chat_action import ChatActionSender
 
 from src.keyboards.menu import (
     WorkCB,
@@ -59,7 +58,7 @@ async def add_work(message: types.Message, state: FSMContext):
 @work_router.callback_query(
     MenuState.work, WorkCB.filter(F.action == Action.ADD_COMMENT)
 )
-async def callback_rename_work_place(
+async def callback_add_comment_work_place(
     callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
 ):
     await callback.answer()
@@ -69,7 +68,7 @@ async def callback_rename_work_place(
 
 
 @work_router.message(MenuState.add_comment, F.text)
-async def work_place_rename(message: types.Message, state: FSMContext):
+async def work_place_add_comment(message: types.Message, state: FSMContext):
     work = get_user(message.chat.id).selected_work
     work.comment = message.text
 
@@ -83,7 +82,7 @@ async def work_place_rename(message: types.Message, state: FSMContext):
 @work_router.callback_query(
     MenuState.work, WorkCB.filter(F.action == Action.DELETE_COMMENT)
 )
-async def callback_rename_work_place(
+async def callback_delete_comment_work_place(
     callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
 ):
     await callback.answer()
@@ -120,7 +119,7 @@ async def work_place_rename(message: types.Message, state: FSMContext):
 
 
 @work_router.callback_query(MenuState.work, WorkCB.filter(F.action == Action.DELETE))
-async def callback_rename_work_place(
+async def callback_delete_work_place(
     callback: types.CallbackQuery, state: FSMContext, callback_data: WorkCB
 ):
     await callback.answer()
